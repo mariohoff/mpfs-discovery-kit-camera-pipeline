@@ -1,0 +1,42 @@
+set_io -port_name CAM1_SDA  \
+    -pin_name T20           \
+    -fixed true             \
+    -io_std LVCMOS18        \
+    -DIRECTION INOUT        \
+    -RES_PULL UP
+
+set_io -port_name CAM1_SCL  \
+    -pin_name T21           \
+    -fixed true             \
+    -io_std LVCMOS18        \
+    -DIRECTION INOUT        \
+    -RES_PULL UP
+
+set_io -port_name CAM1_EN   \
+    -pin_name Y14           \
+    -fixed true             \
+    -io_std LVCMOS18        \
+    -DIRECTION OUT
+
+set_io -port_name CAM1_GPIO \
+    -pin_name Y17           \
+    -fixed true             \
+    -io_std LVCMOS18        \
+    -DIRECTION OUT
+
+set_io -port_name GPIO_MIPI_RX_CKP \
+    -pin_name A12           \
+    -fixed true             \
+    -io_std MIPI25          \
+    -DIRECTION INPUT
+
+set_io -port_name GPIO_MIPI_RX_CKN \
+    -pin_name B12           \
+    -fixed true             \
+    -io_std MIPI25          \
+    -DIRECTION INPUT
+
+set_io -port_name {GPIO_MIPI_RX_P[0]} -pin_name C11 -fixed true -io_std MIPI25
+set_io -port_name {GPIO_MIPI_RX_P[1]} -pin_name B10 -fixed true -io_std MIPI25
+set_io -port_name {GPIO_MIPI_RX_N[0]} -pin_name B11 -fixed true -io_std MIPI25
+set_io -port_name {GPIO_MIPI_RX_N[1]} -pin_name A10 -fixed true -io_std MIPI25

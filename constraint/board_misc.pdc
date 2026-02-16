@@ -1,0 +1,66 @@
+
+set_io -port_name REF_CLK_50MHz     \
+    -pin_name R18                   \
+    -fixed true                     \
+    -io_std LVCMOS18                \
+    -DIRECTION INPUT
+
+set_io -port_name REFCLK            \
+    -pin_name P5                    \
+	-DIRECTION Input
+
+set_io -port_name REFCLK_N          \
+    -pin_name P4                    \
+	-DIRECTION Input
+
+# set_io -port_name SWITCH1           \
+#     -pin_name T19                   \
+#     -fixed true                     \
+#     -DIRECTION INPUT
+    
+set_io -port_name SWITCH2           \
+    -pin_name U18                   \
+    -fixed true                     \
+    -DIRECTION INPUT
+
+# LED driven from MSS    
+set_io -port_name GPIO_1_9_OUT      \
+    -pin_name E1                    \
+	-DIRECTION Output
+    
+set_io -port_name LED1 \
+    -pin_name T18 \
+    -fixed true \
+    -DIRECTION OUTPUT
+    
+set_io -port_name LED2 \
+    -pin_name V17 \
+    -fixed true \
+    -DIRECTION OUTPUT
+
+set_io -port_name LED3 \
+    -pin_name U20 \
+    -fixed true \
+    -DIRECTION OUTPUT
+    
+set_io -port_name LED4 \
+    -pin_name U21 \
+    -fixed true \
+    -DIRECTION OUTPUT
+    
+set_io -port_name LED5 \
+    -pin_name AA18 \
+    -fixed true \
+    -DIRECTION OUTPUT
+
+set_io -port_name LED6 \
+    -pin_name V16 \
+    -fixed true \
+    -DIRECTION OUTPUT
+    
+set_io -port_name LED7 \
+    -pin_name U15 \
+    -fixed true \
+    -DIRECTION OUTPUT
+
+

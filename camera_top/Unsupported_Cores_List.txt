@@ -1,0 +1,2 @@
+The following components are excluded from the Recursive Export Component Description(Tcl) because there is no Tcl support for them. Please re-create them manually when you run the exported Tcl description in a new design.
+1.mss_camera
