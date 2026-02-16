@@ -1,6 +1,6 @@
 # MPFS Discovery Kit Video Pipeline
 
-I wanted to use the camera on Microchip's MPFS Discovery-Kit[^myfn][^1], but there was no
+I wanted to use the camera on Microchip's MPFS Discovery-Kit[^1], but there was no
 real example on the internet. So I started to rebuild stuff from the 
 Video-Kit-Reference-Design[^2]. I am still far from being done, but at least the
 project can be rebuilt.
