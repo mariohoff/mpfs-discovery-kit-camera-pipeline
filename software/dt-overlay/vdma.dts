@@ -1,0 +1,32 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "microchip,mpfs-disco-kit",
+                 "microchip,mpfs";
+    /* Target the fabric bus so addresses align correctly */
+    /* If &fabric_bus doesn't work, try target-path = "/soc"; */
+    fragment@0 {
+        target-path = "/soc"; 
+        __overlay__ {
+            my_video_dma: vdma-controller@60020000 {
+                compatible = "generic-uio";
+                status = "okay";
+                interrupt-parent = <&plic>;
+
+                reg = <0x0 0x60020000 0x0 0x1000>;
+                /* MSS_INT_F2M[4] */
+                /* interrupts = <122>; */
+                interrupts = <0 122 1>; 
+                linux,uio-name = "vdma-controller@60020000";
+            };
+            my_h264_enc: h264-encoder@60000000 {
+                compatible = "generic-uio";
+                status = "okay";
+                reg = <0x0 0x60000000 0x0 0x1000>;
+                /* MSS_INT_F2M[1] */
+                linux,uio-name = "h264-encoder@60000000";
+            };
+        };
+    };
+};

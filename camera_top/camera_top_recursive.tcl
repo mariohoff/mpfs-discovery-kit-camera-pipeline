@@ -9,18 +9,11 @@ source components/camera_control.tcl
 build_design_hierarchy
 
 #Sourcing the Tcl files for creating individual components under the top level
-source components/Bayer_Interpolation_C1.tcl 
-source components/COREAXI4DMACONTROLLER_C0.tcl 
 source components/COREAXI4INTERCONNECT_C0.tcl 
 source components/CORERESET_CSI_DECODE.tcl 
-source components/CORERESET_PF_C1.tcl 
 source components/CoreAPB3_C0.tcl 
-source components/CoreAXI4SInterconnect_C0.tcl 
-source components/DMA_INITIATOR.tcl 
 source components/H264_Encoder_C0.tcl 
-source components/IMAGE_SCALER_C0.tcl 
 source components/PF_CCC_C1.tcl 
-source components/RGBtoYCbCr_C0.tcl 
 source components/VDMA_C0.tcl 
 source components/CORERESET_PF_C0.tcl 
 source components/CORERXIODBITALIGN_C0.tcl 
@@ -34,6 +27,10 @@ source components/PF_OSC_C0.tcl
 source components/RESET_125MHz_CLOCK.tcl 
 source components/RESET_50MHz_CLOCK.tcl 
 source components/clocks_and_reset.tcl 
+source components/Bayer_Interpolation_C1.tcl 
+source components/IMAGE_SCALER_C0.tcl 
+source components/RGBtoYCbCr_C0.tcl 
+source components/image_pipeline.tcl 
 source components/mipicsi2rxdecoderPF_C0.tcl 
 source components/camera_top.tcl 
 build_design_hierarchy

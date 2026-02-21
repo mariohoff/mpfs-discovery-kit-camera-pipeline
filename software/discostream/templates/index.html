@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }}</title>
+    <script src="https://unpkg.com/htmx.org@2.0.8/dist/htmx.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --panel-bg: #ffffff;
+            --border-color: #ddd;
+            --primary-blue: #2563eb;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Responsive Container */
+        #content {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Stack vertically on small screens */
+        @media (max-width: 900px) {
+            #content {
+                flex-direction: column;
+            }
+        }
+
+        /* Column Basics */
+        .column {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Left: Controls */
+        #controls {
+            flex: 0 0 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            width: 100%; /* Uniform width */
+            padding: 10px;
+            cursor: pointer;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            /* Updated transition to include transform and background-color */
+            transition: opacity 0.2s, transform 0.1s, background-color 0.1s; 
+        }
+
+        button:hover { 
+            opacity: 0.9; 
+        }
+
+        /* New active state for highly visible clicks */
+        button:active {
+            transform: scale(0.95);
+            background-color: #a61cd8;
+        }
+
+        .btn-group-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Center: Stream */
+        #stream {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* min-height: 400px; */
+        }
+
+        video {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 4 / 3;
+            background: #000;
+            border-radius: 4px;
+        }
+
+        /* Right: Status */
+        #status {
+            flex: 0 0 300px;
+        }
+
+        .placeholder {
+            color: #999;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        h3 { margin-top: 0; font-size: 1.1rem; }
+
+        /* Template styles */
+        ul#monitor-stats { list-style: none; padding: 0; }
+        ul#monitor-stats li { 
+            padding: 6px 0; 
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        @keyframes flashBorder {
+            0% { box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.8); /* Light purple */ }
+            100% { box-shadow: 0 0 0 2px transparent; }
+        }
+
+        .flash-highlight {
+            animation: flashBorder 1s ease-out;
+            border-radius: 4px; /* Keeps the flash neatly rounded */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="content">
+        <div id="controls" class="column">
+            <h3>Controls</h3>
+            
+            <div class="btn-group-label">Camera Power</div>
+            <button hx-get="/camera/enable" hx-target="#enable-state">Enable Cam</button>
+            <button hx-get="/camera/disable" hx-target="#enable-state">Disable Cam</button>
+            
+            <div class="btn-group-label">System</div>
+            <button hx-get="/camera/init" hx-target="#monitor-stats">Init Device</button>
+            <button hx-get="/camera/reset" hx-target="#status-messages">Reset Hardware</button>
+            
+            <div class="btn-group-label">Stream Logic</div>
+            <button hx-get="/start" hx-target="#counter-out">Start Worker</button>
+            <button hx-get="/stop" hx-target="#counter-out">Stop Worker</button>
+            
+            <div class="btn-group-label">Telemetry</div>
+            <button hx-get="/camera/state" hx-target="#monitor-stats">Fetch Stats</button>
+            <button hx-get="/status" hx-target="#counter-out">Worker Status</button>
+        </div>
+
+        <div id="stream" class="column">
+            <video id="player" autoplay muted controls></video>
+            <div id="status-messages" style="margin-top: 10px;"></div>
+        </div>
+
+        <div id="status" class="column">
+            <h3>Monitor</h3>
+            
+            <div id="enable-state" hx-get="/camera/isenabled" hx-trigger="load">
+                <span class="placeholder">Checking camera power...</span>
+            </div>
+
+            <div id="monitor-stats" hx-get="/camera/state" hx-trigger="load, every 5s" >
+                <span class="placeholder">No hardware telemetry loaded.</span>
+            </div>
+
+            <div id="counter-out" style="margin-top: 20px; font-family: monospace; font-weight: bold;">
+                <span class="placeholder">Stream: Idle</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jmuxer@2.1.0/dist/jmuxer.min.js"></script>
+    <script>
+        window.onload = function() {
+            var jmuxer = new JMuxer({
+                node: 'player',
+                mode: 'video',
+                flushingTime: 100,
+                fps: 30,
+                debug: false
+            });
+
+            var ws = new WebSocket("ws://" + window.location.host + "/ws");
+            ws.binaryType = 'arraybuffer';
+            
+            ws.onmessage = function(event) {
+                jmuxer.feed({
+                    video: new Uint8Array(event.data)
+                });
+            };
+
+            ws.onopen = () => console.log("Connected to Go backend!");
+            ws.onclose = () => console.log("Disconnected from backend.");
+        };
+    </script>
+    <script>
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            const target = event.detail.target;
+            
+            // Only flash elements inside the Status column or the Status Messages
+            if (target.closest('#status') || target.id === 'status-messages') {
+                // Remove the class if it already exists
+                target.classList.remove('flash-highlight');
+                
+                // Magic trick: trigger a "reflow" so the browser registers the removal 
+                // before adding it back. This forces the animation to restart!
+                void target.offsetWidth; 
+                
+                // Add the class to trigger the flash
+                target.classList.add('flash-highlight');
+            }
+        });
+    </script>
+</body>
+</html>

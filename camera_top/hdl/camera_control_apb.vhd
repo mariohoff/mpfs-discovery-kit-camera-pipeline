@@ -3,36 +3,48 @@ use IEEE.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity camera_control_apb is
-port (
-    PCLK : in std_logic;
-    PRESETN : in std_logic;
+    port (
+        PCLK : in std_logic;
+        PRESETN : in std_logic;
 
-    PARALLEL_CLK : in std_logic;
-    PARALLEL_RESETN : in std_logic;
+        PARALLEL_CLK : in std_logic;
+        PARALLEL_RESETN : in std_logic;
 
-    PSEL : in std_logic;
-    PENABLE : in std_logic;
-    PWRITE : in std_logic;
-    PADDR : in std_logic_vector(31 downto 0);
-    PWDATA : in std_logic_vector(31 downto 0);
-    PREADY : out std_logic;
-    PSLVERR : out std_logic;
-    PRDATA : out std_logic_vector(31 downto 0);
+        PSEL : in std_logic;
+        PENABLE : in std_logic;
+        PWRITE : in std_logic;
+        PADDR : in std_logic_vector(31 downto 0);
+        PWDATA : in std_logic_vector(31 downto 0);
+        PREADY : out std_logic;
+        PSLVERR : out std_logic;
+        PRDATA : out std_logic_vector(31 downto 0);
 
-    FRAME_COUNT : in std_logic_vector(31 downto 0);
-    LINES_PER_FRAME : in std_logic_vector(31 downto 0);
-    PIXEL_PER_LINE : in std_logic_vector(31 downto 0);
-    PIXEL_PER_FRAME : in std_logic_vector(31 downto 0);
-    FRAMES_PER_S : in std_logic_vector(31 downto 0);
-    ERROR_COUNT : in std_logic_vector(31 downto 0);
+        INT_COUNT : in std_logic_vector(31 downto 0);
+        INT_PER_S : in std_logic_vector(31 downto 0);
+        
+        CSI_FRAME_END : in std_logic;
+        
+        FRAME_COUNT : in std_logic_vector(31 downto 0);
+        LINES_PER_FRAME : in std_logic_vector(31 downto 0);
+        PIXEL_PER_LINE : in std_logic_vector(31 downto 0);
+        PIXEL_PER_FRAME : in std_logic_vector(31 downto 0);
+        FRAMES_PER_S : in std_logic_vector(31 downto 0);
+        ERROR_COUNT : in std_logic_vector(31 downto 0);
 
-    CAM_ENABLE : out std_logic;
-    CAM_GPIO : out std_logic;
-    IOD_RESETN : out std_logic;
-    DMA_RESETN : out std_logic;
-    COUNT_RESETN : out std_logic;
-    BAYER_FORMAT : out std_logic_vector(1 downto 0)
-);
+        CAM_ENABLE : out std_logic;
+        CAM_GPIO : out std_logic;
+        IOD_RESETN : out std_logic;
+        DMA_RESETN : out std_logic;
+        COUNT_RESETN : out std_logic;
+        BAYER_FORMAT : out std_logic_vector(1 downto 0);
+        
+        SCALER_HRES_IN : out std_logic_vector(12 downto 0);
+        SCALER_VRES_IN : out std_logic_vector(12 downto 0);
+        SCALER_HRES_OUT : out std_logic_vector(12 downto 0);
+        SCALER_VRES_OUT : out std_logic_vector(12 downto 0);
+        SCALER_HFACT : out std_logic_vector(15 downto 0);
+        SCALER_VFACT : out std_logic_vector(15 downto 0)
+    );
 end camera_control_apb;
 
 architecture behave of camera_control_apb is
@@ -47,9 +59,22 @@ architecture behave of camera_control_apb is
     constant C_REG_RESET_GEN : std_logic_vector(7 downto 0)         := x"20";
     constant C_REG_BAYER_FORMAT : std_logic_vector(7 downto 0)      := x"30";
     
+    constant C_REG_HRES_IN : std_logic_vector(7 downto 0)           := x"40";
+    constant C_REG_VRES_IN : std_logic_vector(7 downto 0)           := x"44";
+    constant C_REG_HRES_OUT : std_logic_vector(7 downto 0)          := x"48";
+    constant C_REG_VRES_OUT : std_logic_vector(7 downto 0)          := x"4c";
+    constant C_REG_HFACT : std_logic_vector(7 downto 0)             := x"50";
+    constant C_REG_VFACT : std_logic_vector(7 downto 0)             := x"54";
+    
+    constant C_REG_INT_COUNT : std_logic_vector(7 downto 0)         := x"60";
+    constant C_REG_INT_PER_S : std_logic_vector(7 downto 0)         := x"64";
+    
     constant C_RESET_CYCLES : natural := 50; -- picked arbitrary
     signal cam_ctrl_reg : std_logic_vector(7 downto 0);
     signal bayer_format_reg : std_logic_vector(1 downto 0);
+    signal hres_in_reg, vres_in_reg : std_logic_vector(12 downto 0);
+    signal hres_out_reg, vres_out_reg : std_logic_vector(12 downto 0);
+    signal hres_fact_reg, vres_fact_reg : std_logic_vector(15 downto 0);
     
     signal iod_reset_gen : std_logic;
     signal iod_reset_done : std_logic;
@@ -67,7 +92,27 @@ begin
     CAM_ENABLE <= cam_ctrl_reg(0);
     CAM_GPIO <= cam_ctrl_reg(1);
     BAYER_FORMAT <= bayer_format_reg;
-
+    
+    -- only update values on blanking, as recommended in user guide
+    process(PCLK, PRESETN)
+    begin
+        if PRESETN = '0' then
+            SCALER_HRES_IN <= (others => '0');
+            SCALER_VRES_IN <= (others => '0');
+            SCALER_HRES_OUT <= (others => '0');
+            SCALER_VRES_OUT <= (others => '0');
+            SCALER_HFACT <= (others => '0');
+            SCALER_VFACT <= (others => '0');
+        elsif rising_edge(PCLK) then
+            SCALER_HRES_IN <= hres_in_reg;
+            SCALER_VRES_IN <= vres_in_reg;
+            SCALER_HRES_OUT <= hres_out_reg;
+            SCALER_VRES_OUT <= vres_out_reg;
+            SCALER_HFACT <= hres_fact_reg;
+            SCALER_VFACT <= vres_fact_reg;
+        end if;
+    end process;
+    
     PREADY <= PSEL and PENABLE when rising_edge(PCLK);
     
     wr_apb_p: process(PCLK, PRESETN)
@@ -78,6 +123,10 @@ begin
             dma_reset_gen <= '0';
             count_reset_gen <= '0';
             cam_ctrl_reg <= (others => '0');
+            hres_in_reg <= (others => '0');
+            vres_in_reg <= (others => '0');
+            hres_out_reg <= (others => '0');
+            vres_out_reg <= (others => '0');
         elsif rising_edge(PCLK) then
             lower_addr := PADDR(7 downto 0);
             
@@ -99,6 +148,18 @@ begin
                         count_reset_gen <= not PWDATA(2);
                     when C_REG_BAYER_FORMAT =>
                         bayer_format_reg <= PWDATA(1 downto 0);
+                    when C_REG_HRES_IN =>
+                        hres_in_reg <= PWDATA(12 downto 0);
+                    when C_REG_VRES_IN =>
+                        vres_in_reg <= PWDATA(12 downto 0);
+                    when C_REG_HRES_OUT =>
+                        hres_out_reg <= PWDATA(12 downto 0);
+                    when C_REG_VRES_OUT =>
+                        vres_out_reg <= PWDATA(12 downto 0);
+                    when C_REG_HFACT =>
+                        hres_fact_reg <= PWDATA(15 downto 0);
+                    when C_REG_VFACT =>
+                        vres_fact_reg <= PWDATA(15 downto 0);
                     when others =>
                 end case;
             end if;
@@ -151,6 +212,22 @@ begin
                     when C_REG_BAYER_FORMAT =>
                         tmp_data(1 downto 0) := bayer_format_reg;
                         PRDATA <= tmp_data;
+                    when C_REG_HRES_IN =>
+                        PRDATA <= (31 downto 13 => '0') & hres_in_reg;
+                    when C_REG_VRES_IN =>
+                        PRDATA <= (31 downto 13 => '0') & vres_in_reg;
+                    when C_REG_HRES_OUT =>
+                        PRDATA <= (31 downto 13 => '0') & hres_out_reg;
+                    when C_REG_VRES_OUT =>
+                        PRDATA <= (31 downto 13 => '0') & vres_out_reg;
+                    when C_REG_HFACT =>
+                        PRDATA <= (31 downto 16 => '0') & hres_fact_reg;
+                    when C_REG_VFACT =>
+                        PRDATA <= (31 downto 16 => '0') & vres_fact_reg;
+                    when C_REG_INT_COUNT =>
+                        PRDATA <= INT_COUNT;
+                    when C_REG_INT_PER_S =>
+                        PRDATA <= INT_PER_S;
                     when others =>
                         PRDATA <= (others => '0');
                 end case;
