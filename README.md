@@ -59,6 +59,6 @@ about the h264 configuration. Do not judge pls. Thx.
 
 ## Links 
 
-- [^1] https://www.microchip.com/en-us/development-tool/MPFS-DISCO-KIT
-- [^2] https://github.com/polarfire-soc/polarfire-soc-video-kit-reference-design
+- [^1]: https://www.microchip.com/en-us/development-tool/MPFS-DISCO-KIT
+- [^2]: https://github.com/polarfire-soc/polarfire-soc-video-kit-reference-design
 
