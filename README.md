@@ -5,6 +5,9 @@ real example on the internet. So I started to rebuild stuff from the
 Video-Kit-Reference-Design[^2]. I am still far from being done, but I do have a
 working camera.
 
+I used the Raspberry Pi camera v1.3 (ov5647) for now. So the quality is not that
+great.
+
 ## Setting up the project
 
 This project was built with Libero SoC Design Suite v2025.2. To set it up just
@@ -42,7 +45,7 @@ Early image from gstreamer output:
 
 Web interface for now:
 
-![web interface](docs/webstream.webm)
+https://github.com/user-attachments/assets/2e54e59b-a7f9-440e-9e09-ed18faf3964c
 
 
 ## Disclaimer
