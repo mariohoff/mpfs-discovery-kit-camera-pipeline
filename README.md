@@ -60,6 +60,25 @@ about the h264 configuration. Do not judge pls. Thx.
 - Simple video pipeline example like sobel or gaussian blur
 - adjust camera_control_tb.vhd to the current working state. It hasn't been updated
 
+## Architecture
+
+#### Clocks and Reset
+
+![clocks and reset](docs/clocks_and_reset.png)
+
+#### Cam IOD generic receiver
+
+![cam iod generic](docs/cam_iod_generic.png)
+
+#### Image pipeline
+
+![image pipeline](docs/image_pipeline.png)
+
+#### Full circuit
+
+![full circuit](docs/full_circuit.png)
+
+
 ## Links 
 
 [^1]: https://www.microchip.com/en-us/development-tool/MPFS-DISCO-KIT
